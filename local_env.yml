@@ -2,6 +2,7 @@
   hosts: local
   roles:
     # Tag each role so that we can select individual roles to run with ansible-playbook --tags
+    - {role: dirs, tags: ['dirs', 'bootstrap']}
     - {role: git, tags: ['git']}
     - {role: package_manager, tags: ['package_manager', 'bootstrap']}
     - {role: zsh, tags: ['zsh', 'bootstrap']}
@@ -14,9 +15,6 @@
     - {role: rg, tags: ['rg']}
     - {role: exa, tags: ['exa']}
     - {role: bat, tags: ['bat']}
-    - {role: tmux, tags: ['tmux']}
-    - {role: git-flow, tags: ['git-flow']}
-    - {role: fzf, tags: ['fzf']}
-    - {role: kubernetes, tags: ['kubernetes']}
-    - {role: jrnl, tags: ['jrnl']}
     - {role: macos, tags: ['macos'], when: ansible_os_family == "Darwin"}
+    - {role: wpcli, tags: ['wpcli']}
+    - {role: repos, tags: ['repos']}

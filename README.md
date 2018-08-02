@@ -1,7 +1,7 @@
 dotfiles
 ========
 
-[sloria's dotfiles](https://github.com/sloria/dotfiles-old), rewritten as Ansible roles. Sets up a full local development environment with a **single command.**
+[borkweb's dotfiles](https://github.com/borkweb/dotfiles-old), rewritten as Ansible roles. Sets up a full local development environment with a **single command.** (based off of [sloria's dotfiles](https://github.com/sloria/dotfiles))
 
 Fully supports macOS. Red Hat and Debian support is good but not as complete.
 
@@ -31,7 +31,7 @@ prerequisites (install these first)
 install
 -------
 
-- [Fork](https://github.com/sloria/dotfiles/fork) this repo.
+- [Fork](https://github.com/borkweb/dotfiles/fork) this repo.
 - Clone your fork.
 
 ```bash
@@ -73,11 +73,11 @@ dot-update git python
 updating your dotfiles repo
 ---------------------------
 
-To keep your fork up to date with the `sloria` fork:
+To keep your fork up to date with the `borkweb` fork:
 
 ```
-git remote add sloria https://github.com/sloria/dotfiles.git
-git pull sloria master
+git remote add borkweb https://github.com/borkweb/dotfiles.git
+git pull borkweb master
 ```
 
 commands
@@ -104,19 +104,6 @@ notes
 To import the iterm2 profile, go to your iterm2 preferences, and enable "Load preferences from custom folder" and select the iterm2 folder in the `misc/` directory.
 
 ![iterm2 profile](https://user-images.githubusercontent.com/2379650/34223487-859f2752-e58d-11e7-8024-9e6af5c1ec4e.png)
-
-**macOS keyboard settings**
-
-There are a few keyboard customizations that must be done manually:
-
-- Turning repeat speed up to 11.
-
-![Keyboard settings](https://user-images.githubusercontent.com/2379650/34223505-91f95072-e58d-11e7-9b36-78aec4203b0d.png "Key repeat settings")
-
-
-- Mapping Caps Lock to Ctrl.
-
-![Modifier keys](https://user-images.githubusercontent.com/2379650/34223523-a2c8e4e4-e58d-11e7-9532-d74b95d8408a.png)
 
 what if I only want your vim?
 -----------------------------
