@@ -1,0 +1,3 @@
+
+- name: Homebrew ensure hub installed
+  homebrew: name=hub state=latest

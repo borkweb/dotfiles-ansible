@@ -1,0 +1,20 @@
+- name: Install recommended dependencies for pyenv
+  homebrew: name={{item}} state=latest
+  with_items:
+    - openssl
+    - readline
+    - sqlite3
+    - xz
+    - zlib
+
+- name: Install python2
+  homebrew: name=python state=latest
+
+- name: Install python3
+  homebrew: name=python3 state=latest
+
+- name: Install pyenv
+  homebrew: name=pyenv state=latest
+
+- name: Install pyenv-virtualenv
+  homebrew: name=pyenv-virtualenv state=latest

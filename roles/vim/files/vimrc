@@ -1,0 +1,308 @@
+" Temporary workaround for python 3.7: https://github.com/vim/vim/issues/3117#issuecomment-406853295
+if has('python3') && !has('patch-8.1.201')
+  silent! python3 1
+endif
+" Spacebar is a much better leader than \ or ,
+let mapleader = "\<Space>"
+
+""""" PLUGINS """""
+call plug#begin()
+" ESSENTIALS
+Plug 'tpope/vim-sensible' " Sensible defaults
+Plug 'rstacruz/vim-opinion' " More sensible defaults
+Plug 'ervandew/supertab' " Tab complete everything
+Plug 'ctrlpvim/ctrlp.vim' " Fuzzy-matching go-to file
+nnoremap <C-b> :CtrlPBuffer<CR>
+map <C-t> :CtrlPBufTag<CR>
+" Make ctrlp faster
+let g:ctrlp_user_command = ['.git/', 'git --git-dir=%s/.git ls-files -oc --exclude-standard']
+if has('python') ||  has('python3')
+  " Faster and more accurate fuzzy-matching
+  Plug 'felikz/ctrlp-py-matcher'
+  let g:ctrlp_match_func = { 'match': 'pymatcher#PyMatch' }
+endif
+" rg-powered search with in-place editing
+Plug 'dyng/ctrlsf.vim'
+let g:ctrlsf_ackprg = 'rg'
+let g:ctrlsf_auto_focus = {'at': 'start'}  " Automatically focus search results
+nmap     <C-f>f :CtrlSF ''<Left>
+nmap     <C-f>n <Plug>CtrlSFCwordPath
+nnoremap <C-f>t :CtrlSFToggle<CR>
+Plug 'tpope/vim-rsi'  " unix keybindings in insert mode
+Plug 'tpope/vim-repeat'  " make more actions repeatable with .
+Plug 'machakann/vim-sandwich' " motions for handling surrounding characters
+Plug 'tpope/vim-unimpaired'  " useful bracket maps and option toggling
+Plug 'tomtom/tcomment_vim'  " for code comments
+" Toggle comment with space-/
+nmap <leader>/ <Plug>TComment_<c-_><c-_>
+vmap <leader>/ <Plug>TComment_<c-_><c-_>
+" Buffers
+Plug 'moll/vim-bbye'  " delete buffer without closing window
+nnoremap X :Bdelete<CR>
+Plug 'vim-scripts/BufOnly.vim'  " delete all but current buffer
+
+Plug 'scrooloose/nerdtree'
+nnoremap <leader>d :NERDTreeToggle<CR>
+nnoremap <leader>D :NERDTreeFind<CR>
+let g:NERDTreeRespectWildIgnore = 1
+
+Plug 'w0rp/ale'  " Async linting
+nmap <silent> [s <Plug>(ale_previous_wrap)
+nmap <silent> ]s <Plug>(ale_next_wrap)
+nmap <leader>= <Plug>(ale_fix)
+let g:ale_pattern_options = {
+\   '.*\.md$': {'ale_enabled': 0},
+\   '.*\.rst$': {'ale_enabled': 0},
+\   '.*\.txt$': {'ale_enabled': 0},
+\   '.*\.tex$': {'ale_enabled': 0},
+\}
+nmap <leader>+ :let b:ale_enabled=1<cr>
+" Quickly open the loclist to see syntax errors
+nmap <leader>' :lopen<CR>
+let g:ale_maximum_file_size = 500000  " Don't lint large files (> 500KB), it can slow things down
+let g:ale_linters = {}
+let g:ale_linters.javascript = ['eslint']
+let g:ale_linters.python = ['flake8']
+let g:ale_linters.html = []
+let g:ale_fixers = {}
+let g:ale_fixers.javascript = ['prettier']
+let g:ale_fixers.python = ['black']
+let g:ale_fixers.css = ['prettier']
+
+" NICE TO HAVE
+Plug 'AndrewRadev/splitjoin.vim'  " Language-specific split/join with gS and gJ
+Plug 'vim-airline/vim-airline' | Plug 'vim-airline/vim-airline-themes'
+let g:airline_left_sep=''
+let g:airline_right_sep=''
+let g:airline_theme='tomorrow'
+" Explicitly specify which extensions to use
+let g:airline_extensions = ['branch', 'ctrlp', 'tabline', 'ale', 'whitespace']
+Plug 'christoomey/vim-tmux-navigator'
+Plug 'jszakmeister/vim-togglecursor'  " change cursor shape when entering insert mode
+" Snippets
+if version >= 704 && has('python') || has('python3') | Plug 'SirVer/ultisnips' | endif
+let g:UltiSnipsJumpForwardTrigger="<c-j>"
+let g:UltiSnipsJumpBackwardTrigger="<c-k>"
+Plug 'honza/vim-snippets'
+Plug 'fcpg/vim-spotlightify'  " Highlight and show number of matches when searching
+Plug 'wellle/targets.vim'  " because cin), etc. is awesome
+Plug 'tpope/vim-dispatch' " So we can run tests asynchronously
+Plug 'janko-m/vim-test'  " For running tests
+let test#python#runner = 'pytest'
+nmap <silent> <leader>tt :TestNearest<CR>
+nmap <silent> <leader>tf :TestFile<CR>
+nmap <silent> <leader>tl :TestLast<CR>
+let test#strategy = "dispatch"
+" -s for ipdb support; disable cacheprovider so we don't break 'py.test --lf'
+let test#python#pytest#options = '-s -p no:cacheprovider'
+
+Plug 'mattn/emmet-vim'  " Write HTML fast
+" When in javascript, expand to 'className' (for jsx support)
+let g:user_emmet_settings = {
+  \    'javascript': {'extends': 'jsx'},
+  \    'javascript.jsx': {'extends': 'jsx'}
+  \ }
+let g:user_emmet_leader_key = ','
+Plug 'jiangmiao/auto-pairs' " autoclose parens, quotes, etc.
+if has('mac')
+  Plug 'junegunn/vim-xmark', { 'do': 'make' }  " Live markdown preview
+endif
+Plug 'mtth/scratch.vim'
+let g:scratch_no_mappings = 1
+let g:scratch_height = 20
+let g:scratch_filetype = 'markdown'
+let g:scratch_persistence_file = '.scratch'
+" Open scratch buffer with space-tab (automatically set syntax to python)
+nnoremap <silent> <leader><tab> :Scratch<cr>
+Plug 'tpope/vim-sleuth'  " Detect indent settings
+Plug 'machakann/vim-highlightedyank'  " Highlight yank
+if !exists('##TextYankPost') | map y <Plug>(highlightedyank) | endif
+" GIT
+Plug 'airblade/vim-gitgutter'
+" Set gitgutter's bindings manually to avoid clashes
+let g:gitgutter_map_keys = 0
+nmap <leader>gh <Plug>GitGutterStageHunk
+nmap <leader>gH <Plug>GitGutterUndoHunk
+nmap [h <Plug>GitGutterPrevHunk
+nmap ]h <Plug>GitGutterNextHunk
+Plug 'tpope/vim-fugitive'  " git integration
+Plug 'tpope/vim-rhubarb'  " For :Gbrowse
+map <leader>gs :Gstatus<CR>
+map <leader>gb :Gblame<CR>
+" Open current file on Github
+map <leader>gB :Gbrowse -<CR>
+" Open currently selected lines on Github
+vmap <leader>gB :Gbrowse -<CR>
+map <leader>gr :Gread<CR>
+map <leader>gw :Gwrite<CR>
+noremap <Leader>gp :Gpush<CR>
+Plug 'mattn/webapi-vim' | Plug 'mattn/gist-vim', {'on': 'Gist'}
+" Make gists private by default
+let g:gist_post_private = 1
+" Browse to gist after posting it
+let g:gist_open_browser_after_post = 1
+" Use gr to replace text without blowing away clipboard
+Plug 'vim-scripts/ReplaceWithRegister'
+
+" COLOR
+Plug 'NLKNguyen/papercolor-theme'
+Plug 'sloria/vim-hybrid'  " hybrid with easier-to-read line numbers
+Plug 'nightsense/night-and-day'  " switch colorschemes based on time of day
+" PaperColor in the day, hybrid-sl at night
+let g:nd_themes = [
+  \ ['6:00',  'PaperColor', 'light'],
+  \ ['17:00', 'hybrid-sl', 'dark'],
+  \ ]
+
+" LANGUAGE-SPECIFIC
+Plug 'sheerun/vim-polyglot'  " syntax files for most languages
+let g:polyglot_disabled = ['python', 'latex'] " Use python-syntax and vimtex
+let g:jsx_ext_required = 0
+let g:markdown_fenced_languages = ['javascript', 'python', 'clojure', 'ruby']
+Plug 'lervag/vimtex'
+" --- Python ---
+Plug 'vim-python/python-syntax'  " Improved python syntax
+let g:python_highlight_all = 1
+Plug 'Vimjas/vim-python-pep8-indent'  " Proper python indenting
+
+" Use goto-fix branch until https://github.com/davidhalter/jedi-vim/pull/808 is merged
+if has('python') ||  has('python3') | Plug 'davidhalter/jedi-vim' | endif
+" Just let me type!
+let g:jedi#popup_select_first = 0
+let g:jedi#popup_on_dot = 0
+let g:jedi#smart_auto_mappings = 0  " don't autoadd 'import'
+let g:jedi#show_call_signatures = 0  " Call sigs slow things down for large projects
+let g:jedi#goto_assignments_command = "gD"
+let g:jedi#goto_command = "gd"
+let g:jedi#usages_command = "gu"
+let g:jedi#rename_command = "<C-c>r"
+" --- Javascript ---
+Plug 'lfilho/cosco.vim'  " Quick insertion of commas and semicolons
+augroup cosco
+  autocmd!
+  autocmd FileType javascript,css nmap <silent> <Leader>; <Plug>(cosco-commaOrSemiColon)
+augroup END
+Plug 'heavenshell/vim-jsdoc'  " For making JS docstrings
+let g:jsdoc_default_mapping = 0
+map <C-c>j <Plug>(jsdoc)
+" --- CSS ---
+Plug 'chrisbra/Colorizer'  " Highlight CSS colors
+let g:colorizer_auto_filetype='css,html'
+
+call plug#end()
+filetype plugin indent on
+""" end plugins """
+
+""" BASE CUSTOMIZATIONS """
+" NOTE: Many base customizations come from vim-sensible and vim-opinion
+set encoding=utf-8
+set relativenumber
+set autoread " reload files when changed on disk, i.e. via `git checkout`
+set clipboard^=unnamedplus,unnamed " Make "yanks" work with system clipboard
+
+" Indents
+set autoindent
+set expandtab " expand tabs by default (overloadable per file type later)
+set tabstop=4 softtabstop=4 shiftwidth=4
+set shiftround " use multiple of shiftwidth when indenting with '<' and '>'
+
+" No bells
+set noerrorbells visualbell t_vb=
+
+""" VISUAL SETTINGS """
+if &term =~ '256color' | set t_ut= | endif
+" NOTE: colorscheme will be set by night-and-day. This will only
+" be in effect if night-and-day is disabled
+set background=dark | colorscheme hybrid-sl
+
+" Show trailing whitespace
+set list listchars=tab:▸\ ,trail:▫
+
+set cursorline  " have a line indicate cursor location
+set previewheight=25  " Larger preview height
+
+" Set minimum window size to 79x5.
+set winwidth=79 winheight=5 winminheight=5
+
+" Patterns to ignore for expand(), ctrlp, etc.
+set wildignore+=*.zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz,*.swp,*~,._*,*.pyc,*__pycache__*,*.egg-info
+
+" Persistent undo (can use undos after exiting and restarting)
+if exists("+undofile")
+  if isdirectory($HOME . '/.vim/undo') == 0
+    :silent !mkdir -p ~/.vim/undo > /dev/null 2>&1
+  endif
+  set undodir=./.vim-undo// undodir+=~/.vim/undo// undofile
+endif
+
+""" SHORTCUTS """
+" Quickly edit vimrc
+nmap <leader>, :e $MYVIMRC<CR>
+" Reload vimrc
+noremap <silent> <leader>V :source $MYVIMRC<cr>
+" Search and replace, using : as a separator instead of /
+noremap <leader>sr :%s:::cg<Left><Left><Left><Left>
+" Switch between files
+nnoremap <leader>b :e#<CR>
+" Remove trailing whitespace with Backspace
+nnoremap <BS> :%s/\s\+$//<cr>:let @/=''<CR>
+" select last pasted text
+nnoremap gp `[v`]
+" Easy syntax switching
+nnoremap <leader>Tp :set ft=python<CR>
+nnoremap <leader>Tj :set ft=javascript<CR>
+nnoremap <leader>Tm :set ft=markdown<CR>
+nnoremap <leader>Ty :set ft=yaml<CR>
+" Quickly write/quit
+nnoremap <leader>w :w<CR>
+nnoremap <leader>q :q<CR>
+" Quickly open netrw
+nnoremap <leader>e :e.<CR>
+" Quick split
+nnoremap <Leader>v <C-w>v<C-w>w
+" Quick select whole file
+map <leader>a ggVG
+" Make D delete to end of line
+nnoremap D d$
+" Make Y yank to end of line
+nnoremap Y y$
+" Go to beginning/end of line
+noremap <leader>h ^
+noremap <leader>l $
+" Execute macro
+nnoremap Q @q
+" Move vertically over wrapped lines
+nmap j gj
+nmap k gk
+" Set cwd to current file
+nnoremap <leader>cd :lcd %:p:h<CR>
+" Split lines (opposite of J)
+nnoremap S i<CR><Esc>
+nnoremap <leader>N "=strftime("%F")<CR>P
+inoremap <C-r>n <C-R>=strftime("%F")<CR>
+
+augroup configgroup
+  autocmd!
+  " Make sure Vim returns to the same line when you reopen a file.
+  autocmd BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") | execute 'normal! g`"zvzz' | endif
+
+  " Automatically adjust quickfix window depending on how much text there is
+  autocmd FileType qf call AdjustWindowHeight(3, 20)
+  function! AdjustWindowHeight(minheight, maxheight)
+    exe max([min([line("$"), a:maxheight]), a:minheight]) . "wincmd _"
+  endfunction
+
+  """ Languages
+  " prose (hard wrap and autoformat paragraphs)
+  autocmd BufRead,BufNewFile jrnl*.txt,editor*.txt set filetype=markdown
+  autocmd BufRead,BufNewFile jrnl*.txt,editor*.txt,*.md,*.rst setlocal nolist formatoptions+=ntl textwidth=72 wrapmargin=0
+  autocmd BufRead,BufNewFile .eslintrc set filetype=json
+  autocmd BufRead,BufNewFile .babelrc set filetype=json5
+  " commit messages
+  autocmd Filetype gitcommit setlocal nolist textwidth=72
+augroup END
+
+" GUI settings, e.g. MacVim
+set guifont=Ubuntu\ Mono:h14
+" Hide scrollbars and menu
+set guioptions-=T guioptions-=R guioptions-=r guioptions-=m guioptions-=l guioptions-=L
