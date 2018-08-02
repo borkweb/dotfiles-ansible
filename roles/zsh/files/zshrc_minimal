@@ -6,10 +6,31 @@ prompt redhat
 
 setopt histignorealldups sharehistory
 
+# enable zsh extended glob
+setopt extended_glob
+
+# enable ! history expansion
+setopt bang_hist
+
+# if the commandline starts with a whitespace, don't add it to history
+setopt hist_ignore_space
+
+# make cd push the old directory to the dirstack
+setopt auto_pushd
+
+# don't require the "cd" command to enter a directory
+setopt auto_cd
+
+# do not store duplicates in the stack
+setopt pushd_ignore_dups
+
+# do not print the direcotry stack after pushd or popd
+setopt pushd_silent
+
 export ZSH=$HOME/dotfiles
 
-# Use emacs keybindings even if our EDITOR is set to vi
-bindkey -e
+# Use vim keybindings
+bindkey -v
 
 # Keep 1000 lines of history within the shell and save it to ~/.zsh_history:
 HISTSIZE=1000
@@ -57,8 +78,68 @@ alias pg='ps -ef | grep'
 # Syntax-highlighted cat (requires python-pygments)
 alias dog="pygmentize -g"
 
+##
+## Utility
+##
+alias wacom='killall WacomTabletDriver;open "/Library/Application Support/Tablet/WacomTabletDriver.app"'
+alias vi='vim'
+
+##
+## Git
+##
+alias gsub='git submodule update --init --recursive && git submodule --quiet foreach --recursive "git remote set-url --push origin no_push"'
+alias gup='git pull upstream master;gsub'
+alias gop='git pull origin master;gsub'
+alias gorigin='git push origin HEAD'
+alias gnop='git remote set-url origin --push no_push'
+alias gnup='git remote set-url upstream --push no_push'
+alias git=hub
+
+function gupstream() {
+	git branch --set-upstream-to=$1/$2 $2
+}
+
+alias composer="php ~/bin/composer.phar"
+
+# Codeception unit testing
+alias codecept="vendor/bin/codecept"
+alias wpcept="vendor/bin/wpcept"
+
 # Enable z script
 source ~/dotfiles/roles/z/enable.zsh
+
+umask 002
+
+# colorcode manual pages
+man() {
+	env \
+		LESS_TERMCAP_mb=$(printf "\e[1;31m") \
+		LESS_TERMCAP_md=$(printf "\e[1;31m") \
+		LESS_TERMCAP_me=$(printf "\e[0m") \
+		LESS_TERMCAP_se=$(printf "\e[0m") \
+		LESS_TERMCAP_so=$(printf "\e[1;44;33m") \
+		LESS_TERMCAP_ue=$(printf "\e[0m") \
+		LESS_TERMCAP_us=$(printf "\e[1;32m") \
+		man "$@"
+}
+
+function powerline_precmd() {
+	PS1="$(powerline-shell --shell zsh $?)"
+}
+
+function install_powerline_precmd() {
+	for s in "${precmd_functions[@]}"; do
+		if [ "$s" = "powerline_precmd" ]; then
+			return
+		fi
+	done
+	precmd_functions+=(powerline_precmd)
+}
+
+if [ "$TERM" != "linux" ]; then
+	install_powerline_precmd
+fi
+
 
 # use .localrc for SUPER SECRET CRAP that you don't
 # want in your public, versioned repo.

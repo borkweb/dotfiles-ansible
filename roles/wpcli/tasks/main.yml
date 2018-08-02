@@ -1,0 +1,9 @@
+- name: Install WP CLI
+  get_url:
+    url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    dest: "{{dotfiles_user_home}}/bin/wp-cli.phar"
+    mode: a+x
+
+- name: Relocate WP CLI to /usr/local/bin
+  become: yes
+  command: mv {{dotfiles_user_home}}/bin/wp-cli.phar /usr/local/bin/wp

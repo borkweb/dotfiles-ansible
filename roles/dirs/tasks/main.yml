@@ -1,0 +1,9 @@
+- name: Make bin dir
+  file:
+    path: "{{dotfiles_user_home}}/bin"
+    state: directory
+
+- name: Make git dir
+  file:
+    path: "{{dotfiles_user_home}}/git"
+    state: directory
